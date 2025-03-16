@@ -1,0 +1,62 @@
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  name: client
+  namespace: l422finlayproject
+spec:
+  strategy:
+    type: Rolling
+    rollingParams:
+      updatePeriodSeconds: 1
+      intervalSeconds: 1
+      timeoutSeconds: 600
+      maxUnavailable: 25%
+      maxSurge: 25%
+    resources: {}
+  triggers:
+    - type: ConfigChange
+  replicas: 1
+  selector:
+    app: client
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: client
+    spec:
+      restartPolicy: Always
+      serviceAccountName: containerroot
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsUser: 0
+      containers:
+        - resources:
+            limits:
+              cpu: 1500m
+              memory: 2Gi
+            requests:
+              cpu: '1'
+              memory: 1Gi
+          terminationMessagePath: /dev/termination-log
+          name: client
+          command:
+            - npm
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: src
+              mountPath: /nfs/
+          terminationMessagePolicy: File
+          image: 'finlay83/client:latest'
+          args:
+            - run
+            - serve
+      serviceAccount: containerroot
+      volumes:
+        - name: src
+          persistentVolumeClaim:
+            claimName: l422finlayvol1claim
+      dnsPolicy: ClusterFirst

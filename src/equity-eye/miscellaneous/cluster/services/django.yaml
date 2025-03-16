@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: django
+  namespace: l422finlayproject
+spec:
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  selector:
+    app: django
+  clusterIP: 172.30.20.177
+  type: ClusterIP
+  sessionAffinity: None

@@ -1,0 +1,66 @@
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  name: django
+  namespace: l422finlayproject
+spec:
+  strategy:
+    type: Rolling
+    rollingParams:
+      updatePeriodSeconds: 1
+      intervalSeconds: 1
+      timeoutSeconds: 600
+      maxUnavailable: 25%
+      maxSurge: 25%
+    resources: {}
+  triggers:
+    - type: ConfigChange
+  replicas: 1
+  selector:
+    app: django
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: django
+    spec:
+      restartPolicy: Always
+      serviceAccountName: containerroot
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsUser: 0
+      containers:
+        - resources:
+            limits:
+              cpu: 1500m
+              memory: 2Gi
+            requests:
+              cpu: '1'
+              memory: 1Gi
+          terminationMessagePath: /dev/termination-log
+          name: django
+          command:
+            - python
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: src
+              mountPath: /nfs/
+          terminationMessagePolicy: File
+          envFrom:
+            - configMapRef:
+                name: django-config
+          image: 'finlay83/django-app:latest'
+          args:
+            - manage.py
+            - runserver
+            - '0.0.0.0:8000'
+      serviceAccount: containerroot
+      volumes:
+        - name: src
+          persistentVolumeClaim:
+            claimName: l422finlayvol1claim
+      dnsPolicy: ClusterFirst

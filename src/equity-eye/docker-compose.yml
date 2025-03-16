@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: ./app
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    expose:
+      - 8000
+    volumes:
+      - ./app:/app
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - mysql-db
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "1337:80"
+    depends_on:
+      - app
+
+  article-collector:
+    build:
+      context: ./scraper/article_collector
+    depends_on:
+      - mysql-db
+      - app
+    volumes:
+      -  ../../data/:/data
+
+  agg-collector:
+    build:
+      context: ./scraper/agg_collector
+    depends_on:
+      - mysql-db
+      - app
+    volumes:
+      - ./scraper/agg_collector/src/:/data
+
+  mysql-db:
+    image: mysql:8
+    ports:
+      - "3306:3306"
+    env_file:
+      - ./.env.dev.db
+
+#  pgadmin:
+#    container_name: pgadmin4_container
+#    image: dpage/pgadmin4
+#    restart: always
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+#      PGADMIN_DEFAULT_PASSWORD: root
+#    ports:
+#      - "5050:80"
+#    depends_on:
+#      - mysql-db

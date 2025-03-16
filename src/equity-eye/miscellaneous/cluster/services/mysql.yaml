@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: mysql-db
+  namespace: l422finlayproject
+spec:
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  selector:
+    app: mysql-db
+  clusterIP: 172.30.178.236
+  type: ClusterIP
+  sessionAffinity: None

@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: client
+  namespace: l422finlayproject
+spec:
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: client
+  clusterIP: 172.30.170.229
+  type: ClusterIP
+  sessionAffinity: None

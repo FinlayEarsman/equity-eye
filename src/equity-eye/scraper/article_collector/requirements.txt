@@ -1,0 +1,6 @@
+newsapi-python
+requests
+beautifulsoup4
+spacy
+fuzzywuzzy
+python-Levenshtein

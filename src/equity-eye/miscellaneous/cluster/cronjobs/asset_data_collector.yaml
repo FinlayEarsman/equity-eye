@@ -1,0 +1,50 @@
+kind: CronJob
+apiVersion: batch/v1beta1
+metadata:
+  name: aggregate-collector
+  namespace: l422finlayproject
+spec:
+  schedule: '@daily'
+  concurrencyPolicy: Allow
+  suspend: false
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          volumes:
+            - name: src
+              persistentVolumeClaim:
+                claimName: l422finlayvol1claim
+          containers:
+        - resources:
+            limits:
+              cpu: 1500m
+              memory: 2Gi
+            requests:
+              cpu: '1'
+              terminationMessagePath: /dev/termination-log
+              name: aggregate-collector
+              command:
+                - python
+              ports:
+                - containerPort: 80
+                  protocol: TCP
+              imagePullPolicy: Always
+              volumeMounts:
+                - name: src
+                  mountPath: /nfs/
+              terminationMessagePolicy: File
+              image: 'finlay83/agg_collector:latest'
+              args:
+                - fetch_new_aggregates.py
+          restartPolicy: OnFailure
+          terminationGracePeriodSeconds: 30
+          dnsPolicy: ClusterFirst
+          securityContext: {}
+          schedulerName: default-scheduler
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1

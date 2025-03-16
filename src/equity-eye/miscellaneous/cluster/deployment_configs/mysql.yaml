@@ -1,0 +1,73 @@
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  name: mysql-db
+  namespace: l422finlayproject
+spec:
+  strategy:
+    type: Rolling
+    rollingParams:
+      updatePeriodSeconds: 1
+      intervalSeconds: 1
+      timeoutSeconds: 600
+      maxUnavailable: 25%
+      maxSurge: 25%
+    resources: {}
+    activeDeadlineSeconds: 21600
+  triggers:
+    - type: ConfigChange
+  replicas: 1
+  selector:
+    app: mysql-db
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: mysql-db
+    spec:
+      restartPolicy: Always
+      serviceAccountName: mysql
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      securityContext: {}
+      containers:
+        - resources:
+            limits:
+              cpu: '2'
+              memory: 16Gi
+            requests:
+              cpu: 500m
+              memory: 4Gi
+          terminationMessagePath: /dev/termination-log
+          name: mysql
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: changeme-root
+            - name: MYSQL_DATABASE
+              value: mysql-db
+            - name: MYSQL_USER
+              value: equity-eye
+            - name: MYSQL_PASSWORD
+              value: changeme
+          ports:
+            - containerPort: 3306
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: db-volume
+              mountPath: /var/lib/mysql/
+            - name: db-conf
+              mountPath: /etc/mysql/conf.d/
+          terminationMessagePolicy: File
+          image: 'mysql:8'
+      serviceAccount: mysql
+      volumes:
+        - name: db-volume
+          persistentVolumeClaim:
+            claimName: l422finlaymysqldb
+        - name: db-conf
+          configMap:
+            name: mysql-config
+            defaultMode: 420
+      dnsPolicy: ClusterFirst
+

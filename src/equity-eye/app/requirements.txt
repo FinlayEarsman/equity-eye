@@ -1,0 +1,11 @@
+Django>=4.0
+mysql
+mysqlclient
+sqlalchemy
+pymysql
+newsapi-python
+requests
+beautifulsoup4
+django-rest-framework
+django-cors-headers
+gunicorn
